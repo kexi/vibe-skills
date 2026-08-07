@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@630ae543ea3a38a9a4166f03376c02c50f408342 # v31.11.0
+
+      - name: Check flake
+        run: nix flake check --all-systems
+
+      - name: Validate skill
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: nix develop --command gh skill publish --dry-run .
+
+      - name: Verify action pins
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: nix develop --command pinact run --check --verify
+
+      - name: Validate workflow
+        run: nix develop --command actionlint
+
+      - name: Scan for secrets
+        run: nix develop --command gitleaks git --redact --no-banner .
+
+  release:
+    concurrency:
+      group: vibe-skill-release
+      cancel-in-progress: false
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check for an existing release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v0.0.${{ github.run_number }}
+        run: |
+          release_exists=false
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            release_exists=true
+          fi
+          echo "exists=$release_exists" >> "$GITHUB_OUTPUT"
+
+      - name: Publish skill release
+        if: steps.release.outputs.exists != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: v0.0.${{ github.run_number }}
+        run: gh release create "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --generate-notes --title "$RELEASE_TAG"

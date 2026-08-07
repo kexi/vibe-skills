@@ -1,0 +1,14 @@
+pre-commit:
+  parallel: true
+  commands:
+    skill:
+      glob: "skills/**/*"
+      run: gh skill publish --dry-run .
+    pinact:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: pinact run --check --verify
+    actionlint:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: actionlint
+    gitleaks:
+      run: gitleaks git --pre-commit --staged --redact --no-banner
