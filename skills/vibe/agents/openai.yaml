@@ -1,0 +1,4 @@
+interface:
+  display_name: "Vibe Worktrees"
+  short_description: "Manage Git worktrees safely with the vibe CLI"
+  default_prompt: "Use $vibe to create and manage a Git worktree for this task."
