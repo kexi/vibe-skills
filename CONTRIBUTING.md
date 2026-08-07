@@ -7,6 +7,7 @@ Thank you for helping improve the agent skills for vibe. Contributions should ke
 - Search existing issues and pull requests before starting overlapping work.
 - For a substantial behavior change, open an issue first so the intended agent behavior can be discussed.
 - Install [Nix](https://nixos.org/download/) with flakes enabled.
+- Optionally install [direnv](https://direnv.net/) and [nix-direnv](https://github.com/nix-community/nix-direnv) to load the development shell automatically.
 - Install vibe if you need to verify commands against the CLI itself.
 
 ## Set up the development environment
@@ -21,10 +22,19 @@ nix develop
 
 The development shell provides the validation tools used by CI and automatically installs the Lefthook pre-commit hook.
 
+If you use direnv with nix-direnv, allow the repository once after cloning it:
+
+```console
+direnv allow
+```
+
+The committed `.envrc` then loads the flake development shell whenever you enter the repository.
+
 ## Repository structure
 
 ```text
 .
+├── .envrc                    # Automatic flake loading with direnv
 ├── skills/
 │   └── vibe/
 │       └── SKILL.md       # Skill metadata and agent instructions
