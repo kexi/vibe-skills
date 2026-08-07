@@ -1,6 +1,7 @@
 ---
 name: vibe
 description: Manage Git worktrees with the vibe CLI. Use when creating, reusing, entering, listing, renaming, or removing worktrees; navigating back to the main worktree; reviewing or trusting .vibe.toml configuration; diagnosing shell integration; or configuring Claude Code worktree hooks.
+license: MIT
 ---
 
 # Vibe
