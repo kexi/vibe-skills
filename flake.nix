@@ -31,9 +31,17 @@
         let
           pkgs = (nixpkgsFor system).legacyPackages.${system};
           isIntelDarwin = system == "x86_64-darwin";
+          # The unstable pinact recipe needs the installAgentSkills setup hook,
+          # which nixpkgs 26.05 does not ship, so build the hook from the
+          # unstable setup script with the 26.05 makeSetupHook.
+          # Why not callPackage the unstable installAgentSkills/package.nix:
+          # it requires hunk for its passthru tests, which 26.05 lacks.
+          installAgentSkills = pkgs.makeSetupHook {
+            name = "install-agent-skills";
+          } (nixpkgs + "/pkgs/by-name/in/installAgentSkills/setup-hook.sh");
           pinactPackage =
             if isIntelDarwin then
-              pkgs.callPackage (nixpkgs + "/pkgs/by-name/pi/pinact/package.nix") { }
+              pkgs.callPackage (nixpkgs + "/pkgs/by-name/pi/pinact/package.nix") { inherit installAgentSkills; }
             else
               pkgs.pinact;
         in
